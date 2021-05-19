@@ -11,6 +11,7 @@ Features:
 
 ## Training
 
+https://colab.research.google.com/drive/1-gZS6YNLdLPBGXzW8305BNhxE8LgFz7u#scrollTo=y7qJLCZXymHD
 ### Launch training
 
 **SageMaker**

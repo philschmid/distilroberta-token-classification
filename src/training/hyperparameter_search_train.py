@@ -181,6 +181,8 @@ def main(args):
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
+    # https://github.com/huggingface/transformers/issues/11249
+    trainer._memory_tracker = None
 
     best_trial = trainer.hyperparameter_search(
         hp_space=lambda _: tune_config,
