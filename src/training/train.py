@@ -5,6 +5,7 @@ import sys
 import numpy as np
 from datasets import load_metric
 
+import transformers
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
 from transformers import (
