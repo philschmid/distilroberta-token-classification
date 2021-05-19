@@ -6,7 +6,7 @@ import numpy as np
 from datasets import load_metric
 
 import transformers
-from preprocess_utils import load_ner_dataset, tokenize_dataset
+from preprocess_utils import load_ner_dataset, tokenize_dataset, conll_label2id, conll_id2label, change_entities
 from train_utils import prepare_compute_metrics, prepare_model_init
 from transformers import (
     AutoTokenizer,
@@ -157,6 +157,10 @@ def main(args):
 
     trainer.log_metrics("test", metrics)
     trainer.save_metrics("test", metrics)
+
+    # push to hub
+    config_path = os.path.join(args.output_dir, "config.json")
+    change_entities(config_path, conll_label2id, conll_id2label)
 
     # # https://github.com/huggingface/transformers/blob/2582e59a57154ec5a71321eda24019dd94824e71/src/transformers/trainer.py#L2430
     # if args.push_to_hub:

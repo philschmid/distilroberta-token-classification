@@ -12,7 +12,7 @@ Features:
  'num_train_epochs': 4, 
  'weight_decay': 0.06449331205217038}. 
  ```
- Best is trial 2 with value: `0.9533474277660324`.
+ Best is trial 2 with `eval_f1=0.9533474277660324` and `test_f1=0.909`.
 
 ## Training
 
