@@ -21,8 +21,8 @@ from transformers import (
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint, is_main_process
-from .preprocess_utils import load_ner_dataset, tokenize_dataset
-from .train_utils import prepare_compute_metrics, prepare_model_init
+from preprocess_utils import load_ner_dataset, tokenize_dataset
+from train_utils import prepare_compute_metrics, prepare_model_init
 import torch
 
 # Set up logging
