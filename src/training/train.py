@@ -38,6 +38,7 @@ def parse_args():
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
+    parser.add_argument("--use_auth_token", type=str)
 
     # # Data, model, and output directories
     # parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -93,7 +94,7 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
-    dataset_name = "conll"
+    dataset_name = "conll2003"
     datasets, num_labels, label_to_id, label_list = load_ner_dataset(dataset_name)
     padding = "max_length" if args.pad_to_max_length else False
 
@@ -163,15 +164,17 @@ def main(args):
     change_entities(config_path, conll_label2id, conll_id2label)
 
     # # https://github.com/huggingface/transformers/blob/2582e59a57154ec5a71321eda24019dd94824e71/src/transformers/trainer.py#L2430
-    # if args.push_to_hub:
-    #     kwargs = {
-    #         "finetuned_from": args.model_name_or_path,
-    #         "tags": "token-classification",
-    #         "dataset_tags": dataset_name,
-    #         "dataset": dataset_name,
-    #     }
+    if args.use_auth_token:
+        kwargs = {
+            "finetuned_from": args.model_name_or_path,
+            "tags": "token-classification",
+            "dataset_tags": dataset_name,
+            "dataset": dataset_name,
+        }
 
-    #     trainer.push_to_hub(**kwargs)
+        trainer.push_to_hub(
+            repo_name=f"{args.model_name_or_path}-{dataset_name}", use_auth_token=args.use_auth_token, **kwargs
+        )
 
 
 if __name__ == "__main__":
