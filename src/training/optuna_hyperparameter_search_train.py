@@ -126,7 +126,6 @@ def main(args):
         }
 
     def my_compute_objective(metrics):
-        print(metrics)
         metrics = copy.deepcopy(metrics)
         return metrics[f"eval_{objective_metric}"]
 
@@ -167,6 +166,7 @@ def main(args):
     predictions = np.argmax(predictions, axis=2)
 
     trainer.log_metrics("test", metrics)
+    logger.info(metrics)
     trainer.save_metrics("test", metrics)
 
 
