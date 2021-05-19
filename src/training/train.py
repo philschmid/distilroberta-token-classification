@@ -35,6 +35,7 @@ def parse_args():
     parser.add_argument("--model_name_or_path", type=str)
     parser.add_argument("--learning_rate", type=str, default=5e-5)
     parser.add_argument("--fp16", type=bool, default=True)
+    parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
 
     # # Data, model, and output directories
@@ -92,7 +93,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
     datasets, num_labels, label_to_id, label_list = load_ner_dataset("conll")
-    padding = False
+    padding = "max_length" if args.pad_to_max_length else False
 
     train_dataset = tokenize_dataset(
         dataset=datasets["train"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
