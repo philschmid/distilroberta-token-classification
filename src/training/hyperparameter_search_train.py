@@ -72,6 +72,7 @@ def main(args):
         metric_for_best_model="f1",
         # ray parameter
         evaluation_strategy="steps",
+        do_eval=True,
         eval_steps=500,
         disable_tqdm=True,
     )

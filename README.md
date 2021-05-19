@@ -30,7 +30,7 @@ python src/train.py --foo bar
 
 ### Launch hyperparameter search with ray tune
 
-Inspired/Guided from the [Hugging Face Blog Post "Hyperparameter Search with Transformers and Ray Tune"](https://huggingface.co/blog/ray-tune)
+Inspired/Guided from the [Hugging Face Blog Post "Hyperparameter Search with Transformers and Ray Tune"](https://huggingface.co/blog/ray-tune). Here is another example from ray [pbt_transformers_example](https://docs.ray.io/en/master/tune/examples/pbt_transformers.html)
 
 **Local Machine**
 
