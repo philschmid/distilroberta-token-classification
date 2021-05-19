@@ -28,12 +28,6 @@ import torch
 # Set up logging
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(
-    level=logging.getLevelName("INFO"),
-    handlers=[logging.StreamHandler(sys.stdout)],
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -59,6 +53,45 @@ def parse_args():
 
 
 def main(args):
+    # define training args
+    training_args = TrainingArguments(
+        output_dir=args.output_dir,
+        num_train_epochs=args.num_train_epochs,
+        per_device_train_batch_size=args.per_device_train_batch_size,
+        per_device_eval_batch_size=args.per_device_eval_batch_size,
+        warmup_steps=args.warmup_steps,
+        evaluation_strategy="epoch",
+        logging_dir=f"{args.output_dir}/logs",
+        learning_rate=float(args.learning_rate),
+        save_steps=2500,
+        fp16=args.fp16,
+        load_best_model_at_end=True,
+        metric_for_best_model="f1",
+    )
+
+    # Setup logging
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(name)s -   %(message)s",
+        datefmt="%m/%d/%Y %H:%M:%S",
+        handlers=[logging.StreamHandler(sys.stdout)],
+    )
+    logger.setLevel(logging.INFO if is_main_process(training_args.local_rank) else logging.WARN)
+
+    # Log on each process the small summary:
+    logger.warning(
+        f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
+        + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
+    )
+    # Set the verbosity to info of the Transformers logger (on main process only):
+    if is_main_process(training_args.local_rank):
+        transformers.utils.logging.set_verbosity_info()
+        transformers.utils.logging.enable_default_handler()
+        transformers.utils.logging.enable_explicit_format()
+    logger.info(f"Training/evaluation parameters {training_args}")
+
+    # Set seed before initializing model.
+    set_seed(training_args.seed)
+
     # Load tokenizer and preprocess dataset
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
@@ -88,22 +121,6 @@ def main(args):
     # load model
     model_init = prepare_model_init(args.model_name_or_path, num_labels)
     model = model_init()
-
-    # define training args
-    training_args = TrainingArguments(
-        output_dir=args.output_dir,
-        num_train_epochs=args.num_train_epochs,
-        per_device_train_batch_size=args.per_device_train_batch_size,
-        per_device_eval_batch_size=args.per_device_eval_batch_size,
-        warmup_steps=args.warmup_steps,
-        evaluation_strategy="epoch",
-        logging_dir=f"{args.output_dir}/logs",
-        learning_rate=float(args.learning_rate),
-        save_steps=2500,
-        fp16=args.fp16,
-        load_best_model_at_end=True,
-        metric_for_best_model="f1",
-    )
 
     # Initialize our Trainer
     trainer = Trainer(
