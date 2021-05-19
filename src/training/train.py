@@ -67,15 +67,15 @@ def main(args):
     padding = True
 
     train_dataset = tokenize_dataset(
-        dataset=datasets["train"], tokenzier=tokenizer, padding=padding, label_to_id=label_to_id
+        dataset=datasets["train"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
     )
 
     eval_dataset = tokenize_dataset(
-        dataset=datasets["validation"], tokenzier=tokenizer, padding=padding, label_to_id=label_to_id
+        dataset=datasets["validation"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
     )
 
     test_dataset = tokenize_dataset(
-        dataset=datasets["test"], tokenzier=tokenizer, padding=padding, label_to_id=label_to_id
+        dataset=datasets["test"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
     )
 
     # Data collator
