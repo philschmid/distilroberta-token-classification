@@ -4,10 +4,15 @@ This repository contains the code to train [distilroberta-base](https://huggingf
 
 
 Features:
-- [ ] Earlystopping Callback
-- [ ] Load best model at the end
-- [ ] Hyperparameter search
+- [X] Load best model at the end
+- [x] Hyperparameter search
 
+```json
+{'learning_rate': 4.568387981745284e-05,
+ 'num_train_epochs': 4, 
+ 'weight_decay': 0.06449331205217038}. 
+ ```
+ Best is trial 2 with value: `0.9533474277660324`.
 
 ## Training
 

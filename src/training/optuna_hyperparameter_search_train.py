@@ -32,7 +32,6 @@ def parse_args():
     parser.add_argument("--n_trials", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=16)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-    parser.add_argument("--save_steps", type=int, default=500)
     parser.add_argument("--model_name_or_path", type=str)
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
@@ -62,8 +61,7 @@ def main(args):
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         logging_dir=f"{args.output_dir}/logs",
         fp16=args.fp16,
-        load_best_model_at_end=True,
-        metric_for_best_model="f1",
+        save_strategy="epoch",
         # ray parameter
         learning_rate=1e-5,  # config
         num_train_epochs=2,  # config

@@ -30,10 +30,11 @@ def parse_args():
     parser.add_argument("--num_train_epochs", type=float, default=3.0)
     parser.add_argument("--per_device_train_batch_size", type=int, default=8)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-    parser.add_argument("--warmup_steps", type=int, default=500)
-    parser.add_argument("--save_steps", type=int, default=500)
+    parser.add_argument("--warmup_steps", type=int, default=0)
+    parser.add_argument("--save_steps", type=int, default=1000)
     parser.add_argument("--model_name_or_path", type=str)
     parser.add_argument("--learning_rate", type=str, default=5e-5)
+    parser.add_argument("--weight_decay", type=str, default=0.0)
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
@@ -56,10 +57,10 @@ def main(args):
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         warmup_steps=args.warmup_steps,
-        # evaluation_strategy="epoch",
+        weight_decay=args.weight_decay,
         logging_dir=f"{args.output_dir}/logs",
         learning_rate=float(args.learning_rate),
-        save_steps=2500,
+        save_steps=args.save_steps,
         fp16=args.fp16,
         load_best_model_at_end=True,
         metric_for_best_model="f1",
