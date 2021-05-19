@@ -6,10 +6,10 @@ import numpy as np
 from datasets import load_metric
 
 import transformers
+from ray import tune
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
-from ray.tune.suggest.hyperopt import HyperOptSearch
-from ray.tune.schedulers.async_hyperband import AsyncHyperBandScheduler
+from ray.tune.schedulers import PopulationBasedTraining
 
 
 from transformers import (
@@ -31,14 +31,12 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser()
     # hyperparameters sent by the client are passed as command-line arguments to the script.
-    parser.add_argument("--num_train_epochs", type=float, default=3.0)
     parser.add_argument("--n_trials", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=16)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
     parser.add_argument("--warmup_steps", type=int, default=500)
     parser.add_argument("--save_steps", type=int, default=500)
     parser.add_argument("--model_name_or_path", type=str)
-    parser.add_argument("--learning_rate", type=str, default=5e-5)
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
@@ -63,7 +61,6 @@ def main(args):
     # define training args
     training_args = TrainingArguments(
         output_dir=args.output_dir,
-        num_train_epochs=args.num_train_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         logging_dir=f"{args.output_dir}/logs",
@@ -71,9 +68,13 @@ def main(args):
         load_best_model_at_end=True,
         metric_for_best_model="f1",
         # ray parameter
-        evaluation_strategy="steps",
+        learning_rate=1e-5,  # config
+        num_train_epochs=2,  # config
+        weight_decay=0.1,  # config
+        evaluation_strategy="epoch",
+        warmup_steps=0,
+        do_train=True,
         do_eval=True,
-        eval_steps=500,
         disable_tqdm=True,
     )
 
@@ -149,6 +150,27 @@ def main(args):
 
     # load model
     model_init = prepare_model_init(args.model_name_or_path, num_labels)
+
+    tune_config = {
+        "num_train_epochs": tune.choice([3, 4, 5, 6]),
+    }
+
+    scheduler = PopulationBasedTraining(
+        time_attr="training_iteration",
+        metric="eval_f1",
+        mode="max",
+        perturbation_interval=1,
+        hyperparam_mutations={
+            "weight_decay": tune.uniform(0.0, 0.3),
+            "learning_rate": tune.uniform(1e-5, 5e-5),
+        },
+    )
+
+    reporter = CLIReporter(
+        parameter_columns={"weight_decay": "w_decay", "learning_rate": "lr", "num_train_epochs": "num_epochs"},
+        metric_columns=["eval_f1", "eval_precision", "eval_accuracy", "epoch", "training_iteration"],
+    )
+
     # Initialize our Trainer
     trainer = Trainer(
         args=training_args,
@@ -161,35 +183,20 @@ def main(args):
     )
 
     best_trial = trainer.hyperparameter_search(
-        direction="maximize",
+        hp_space=lambda _: tune_config,
         backend="ray",
-        n_trials=args.n_trials,
-        # Choose among many libraries:
-        # https://docs.ray.io/en/latest/tune/api_docs/suggestion.html
-        search_alg=HyperOptSearch(),
-        # Choose among schedulers:
-        # https://docs.ray.io/en/latest/tune/api_docs/schedulers.html
-        scheduler=AsyncHyperBandScheduler(),
+        n_trials=num_samples,
+        resources_per_trial={"cpu": 1, "gpu": 1},
+        scheduler=scheduler,
+        keep_checkpoints_num=1,
+        checkpoint_score_attr="training_iteration",
+        stop={"training_iteration": 1} if smoke_test else None,
+        progress_reporter=reporter,
+        local_dir="./ray",
+        name="tune_transformer_pbt",
+        log_to_file=True,
     )
     logger.info(best_trial)
-
-    # Training
-    # train_result = trainer.train()
-    # metrics = train_result.metrics
-    # trainer.save_model()  # Saves the tokenizer too for easy upload
-
-    # metrics["train_samples"] = len(train_dataset)
-    # trainer.log_metrics("train", metrics)
-    # trainer.save_metrics("train", metrics)
-    # trainer.save_state()
-
-    # Evaluation
-    logger.info("*** Evaluate ***")
-
-    metrics = trainer.evaluate()
-    metrics["eval_samples"] = len(eval_dataset)
-    trainer.log_metrics("eval", metrics)
-    trainer.save_metrics("eval", metrics)
 
     # Test
     logger.info("*** Test ***")
