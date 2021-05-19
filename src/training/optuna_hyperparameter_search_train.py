@@ -148,13 +148,17 @@ def main(args):
         backend="optuna",
         n_trials=args.n_trials,
     )
+    logger.info(best_run)
 
-    logger.info(best_run.best_params)
+    result = {
+        objective_metric: best_run.objective,
+        "hyperparameters": best_run.hyperparameters,
+    }
     # Save predictions
     output_best_run = os.path.join(training_args.output_dir, "hpo_best_params.json")
     if trainer.is_world_process_zero():
         with open(output_best_run, "w") as outfile:
-            json.dump(best_run.best_params, outfile)
+            json.dump(result, outfile)
 
     # Test
     logger.info("*** Test ***")
