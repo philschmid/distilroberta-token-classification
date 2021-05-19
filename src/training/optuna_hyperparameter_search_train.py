@@ -133,7 +133,7 @@ def main(args):
         return {
             "learning_rate": trial.suggest_float("learning_rate", 1e-5, 5e-5, log=True),
             "num_train_epochs": trial.suggest_int("num_train_epochs", 3, 6),
-            "weight_decay": trial.suggest_uniform("weight_decay", 0.0, 0.3, log=True),
+            "weight_decay": trial.suggest_float("weight_decay", 0.0, 0.3),
         }
 
     # def default_compute_objective(metrics: Dict[str, float]) -> float:
