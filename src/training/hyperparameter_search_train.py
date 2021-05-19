@@ -71,7 +71,7 @@ def main(args):
         load_best_model_at_end=True,
         metric_for_best_model="f1",
         # ray parameter
-        evaluate_during_training=True,
+        evaluation_strategy="steps",
         eval_steps=500,
         disable_tqdm=True,
     )
