@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
-    parser.add_argument("--use_auth_token", type=str)
+    parser.add_argument("--use_auth_token", type=str, default="")
 
     # # Data, model, and output directories
     # parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -164,7 +164,7 @@ def main(args):
     change_entities(config_path, conll_label2id, conll_id2label)
 
     # # https://github.com/huggingface/transformers/blob/2582e59a57154ec5a71321eda24019dd94824e71/src/transformers/trainer.py#L2430
-    if args.use_auth_token:
+    if args.use_auth_token != "":
         kwargs = {
             "finetuned_from": args.model_name_or_path,
             "tags": "token-classification",
