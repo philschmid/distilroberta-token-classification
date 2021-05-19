@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser()
     # hyperparameters sent by the client are passed as command-line arguments to the script.
-    parser.add_argument("--num_train_epochs", type=int, default=3)
+    parser.add_argument("--num_train_epochs", type=float, default=3.0)
     parser.add_argument("--per_device_train_batch_size", type=int, default=8)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
     parser.add_argument("--warmup_steps", type=int, default=500)
@@ -60,7 +60,7 @@ def main(args):
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         warmup_steps=args.warmup_steps,
-        evaluation_strategy="epoch",
+        # evaluation_strategy="epoch",
         logging_dir=f"{args.output_dir}/logs",
         learning_rate=float(args.learning_rate),
         save_steps=2500,
