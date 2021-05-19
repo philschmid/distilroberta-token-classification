@@ -125,7 +125,7 @@ def main(args):
             "weight_decay": trial.suggest_float("weight_decay", 0.0, 0.3),
         }
 
-    def my_compute_objective(metrics: Dict[str, float]) -> float:
+    def my_compute_objective(metrics):
         print(metrics)
         metrics = copy.deepcopy(metrics)
         return metrics[f"eval_{objective_metric}"]
