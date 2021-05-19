@@ -1,4 +1,5 @@
-from datasets import ClassLabel, load_dataset, load_metric
+from datasets import ClassLabel, load_dataset
+
 
 TEXT_COLUMN_NAME = "tokens"
 LABEL_COLUMN_NAME = "ner_tags"

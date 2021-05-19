@@ -1,6 +1,6 @@
-from datasets import ClassLabel, load_dataset, load_metric
-from transformers import AutoModelForTokenClassification
 import numpy as np
+
+from transformers import AutoModelForTokenClassification
 
 
 def prepare_compute_metrics(metric, label_list):

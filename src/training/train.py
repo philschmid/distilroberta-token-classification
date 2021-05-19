@@ -1,29 +1,16 @@
-import logging
-import os
 import argparse
+import logging
 import sys
-from dataclasses import dataclass, field
-from typing import Optional
 
 import numpy as np
-from datasets import ClassLabel, load_dataset, load_metric
+from datasets import load_metric
 
 import transformers
-from transformers import (
-    AutoConfig,
-    AutoModelForTokenClassification,
-    AutoTokenizer,
-    DataCollatorForTokenClassification,
-    HfArgumentParser,
-    PreTrainedTokenizerFast,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-)
-from transformers.trainer_utils import get_last_checkpoint, is_main_process
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
-import torch
+from transformers import AutoTokenizer, DataCollatorForTokenClassification, Trainer, TrainingArguments, set_seed
+from transformers.trainer_utils import is_main_process
+
 
 # Set up logging
 logger = logging.getLogger(__name__)
@@ -119,8 +106,18 @@ def main(args):
     compute_metrics = prepare_compute_metrics(metric, label_list)
 
     # load model
-    model_init = prepare_model_init(args.model_name_or_path, num_labels)
-    model = model_init()
+    # model_init = prepare_model_init(args.model_name_or_path, num_labels)
+    # model = model_init()
+
+    config = AutoConfig.from_pretrained(
+        args.model_name_or_path,
+        num_labels=num_labels,
+        finetuning_task="ner",
+    )
+    model = AutoModelForTokenClassification.from_pretrained(
+        args.model_name_or_path,
+        config=config,
+    )
 
     # Initialize our Trainer
     trainer = Trainer(
@@ -156,12 +153,6 @@ def main(args):
 
     predictions, labels, metrics = trainer.predict(test_dataset, metric_key_prefix="test")
     predictions = np.argmax(predictions, axis=2)
-
-    # Remove ignored index (special tokens)
-    true_predictions = [
-        [label_list[p] for (p, l) in zip(prediction, label) if l != -100]
-        for prediction, label in zip(predictions, labels)
-    ]
 
     trainer.log_metrics("test", metrics)
     trainer.save_metrics("test", metrics)
