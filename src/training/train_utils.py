@@ -31,6 +31,8 @@ def prepare_compute_metrics(metric, label_list):
 
 def prepare_model_init(model_id, num_labels):
     def model_init():
-        return AutoModelForTokenClassification.from_pretrained(model_id, return_dict=True, num_labels=num_labels)
+        return AutoModelForTokenClassification.from_pretrained(
+            model_id, return_dict=True, num_labels=num_labels, finetuning_task="ner"
+        )
 
     return model_init

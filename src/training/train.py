@@ -92,7 +92,7 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
     datasets, num_labels, label_to_id, label_list = load_ner_dataset("conll")
-    padding = True
+    padding = False
 
     train_dataset = tokenize_dataset(
         dataset=datasets["train"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
@@ -114,18 +114,8 @@ def main(args):
     compute_metrics = prepare_compute_metrics(metric, label_list)
 
     # load model
-    # model_init = prepare_model_init(args.model_name_or_path, num_labels)
-    # model = model_init()
-
-    config = AutoConfig.from_pretrained(
-        args.model_name_or_path,
-        num_labels=num_labels,
-        finetuning_task="ner",
-    )
-    model = AutoModelForTokenClassification.from_pretrained(
-        args.model_name_or_path,
-        config=config,
-    )
+    model_init = prepare_model_init(args.model_name_or_path, num_labels)
+    model = model_init()
 
     # Initialize our Trainer
     trainer = Trainer(
