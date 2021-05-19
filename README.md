@@ -28,5 +28,15 @@ python sagemaker_launcher.py
 python src/train.py --foo bar
 ```
 
+### Launch hyperparameter search with ray tune
+
+Inspired/Guided from the [Hugging Face Blog Post "Hyperparameter Search with Transformers and Ray Tune"](https://huggingface.co/blog/ray-tune)
+
+**Local Machine**
+
+
+```bash
+python src/hyperparameter_search_train.py
+```
 
 ## Results
