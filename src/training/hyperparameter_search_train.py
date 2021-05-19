@@ -10,6 +10,7 @@ from ray import tune
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
 from ray.tune.schedulers import PopulationBasedTraining
+from ray.tune import CLIReporter
 
 
 from transformers import (
@@ -185,12 +186,12 @@ def main(args):
     best_trial = trainer.hyperparameter_search(
         hp_space=lambda _: tune_config,
         backend="ray",
-        n_trials=num_samples,
+        n_trials=args.n_trail,
         resources_per_trial={"cpu": 1, "gpu": 1},
         scheduler=scheduler,
         keep_checkpoints_num=1,
         checkpoint_score_attr="training_iteration",
-        stop={"training_iteration": 1} if smoke_test else None,
+        stop=None,
         progress_reporter=reporter,
         local_dir="./ray",
         name="tune_transformer_pbt",
