@@ -1,11 +1,13 @@
 import argparse
 import logging
 import sys
+import copy
+import os
+import json
 
 import numpy as np
 from datasets import load_metric
 
-import transformers
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
 
@@ -16,8 +18,6 @@ from transformers import (
     Trainer,
     TrainingArguments,
     set_seed,
-    AutoConfig,
-    AutoModelForTokenClassification,
 )
 from transformers.trainer_utils import is_main_process
 
@@ -84,18 +84,6 @@ def main(args):
     )
     logger.setLevel(logging.INFO if is_main_process(training_args.local_rank) else logging.WARN)
 
-    # Log on each process the small summary:
-    logger.warning(
-        f"Process rank: {training_args.local_rank}, device: {training_args.device}, n_gpu: {training_args.n_gpu}"
-        + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
-    )
-    # Set the verbosity to info of the Transformers logger (on main process only):
-    if is_main_process(training_args.local_rank):
-        transformers.utils.logging.set_verbosity_info()
-        transformers.utils.logging.enable_default_handler()
-        transformers.utils.logging.enable_explicit_format()
-    logger.info(f"Training/evaluation parameters {training_args}")
-
     # Set seed before initializing model.
     set_seed(training_args.seed)
 
@@ -123,6 +111,7 @@ def main(args):
 
     # metric
     metric = load_metric("seqeval")
+    objective_metric = "f1"
     compute_metrics = prepare_compute_metrics(metric, label_list)
 
     # load model
@@ -136,15 +125,10 @@ def main(args):
             "weight_decay": trial.suggest_float("weight_decay", 0.0, 0.3),
         }
 
-    # def default_compute_objective(metrics: Dict[str, float]) -> float:
-    #     metrics = copy.deepcopy(metrics)
-    #     loss = metrics.pop("eval_loss", None)
-    #     _ = metrics.pop("epoch", None)
-    #     # Remove speed metrics
-    #     speed_metrics = [m for m in metrics.keys() if m.endswith("_runtime") or m.endswith("_samples_per_second")]
-    #     for sm in speed_metrics:
-    #         _ = metrics.pop(sm, None)
-    #     return loss if len(metrics) == 0 else sum(metrics.values())
+    def my_compute_objective(metrics: Dict[str, float]) -> float:
+        print(metrics)
+        metrics = copy.deepcopy(metrics)
+        return metrics[f"eval_{objective_metric}"]
 
     # Initialize our Trainer
     trainer = Trainer(
@@ -158,10 +142,19 @@ def main(args):
     )
 
     best_run = trainer.hyperparameter_search(
-        direction="maximize", hp_space=my_hp_space, backend="optuna", n_trials=args.n_trials
+        compute_objective=my_compute_objective,
+        direction="maximize",
+        hp_space=my_hp_space,
+        backend="optuna",
+        n_trials=args.n_trials,
     )
 
-    logger.info(best_run)
+    logger.info(best_run.best_params)
+    # Save predictions
+    output_best_run = os.path.join(training_args.output_dir, "hpo_best_params.json")
+    if trainer.is_world_process_zero():
+        with open(output_best_run, "w") as outfile:
+            json.dump(best_run.best_params, outfile)
 
     # Test
     logger.info("*** Test ***")
