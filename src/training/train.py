@@ -33,8 +33,8 @@ def parse_args():
     parser.add_argument("--warmup_steps", type=int, default=0)
     parser.add_argument("--save_steps", type=int, default=1000)
     parser.add_argument("--model_name_or_path", type=str)
-    parser.add_argument("--learning_rate", type=str, default=5e-5)
-    parser.add_argument("--weight_decay", type=str, default=0.0)
+    parser.add_argument("--learning_rate", type=float, default=5e-5)
+    parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
@@ -93,7 +93,8 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
-    datasets, num_labels, label_to_id, label_list = load_ner_dataset("conll")
+    dataset_name = "conll"
+    datasets, num_labels, label_to_id, label_list = load_ner_dataset(dataset_name)
     padding = "max_length" if args.pad_to_max_length else False
 
     train_dataset = tokenize_dataset(
@@ -156,6 +157,17 @@ def main(args):
 
     trainer.log_metrics("test", metrics)
     trainer.save_metrics("test", metrics)
+
+    # # https://github.com/huggingface/transformers/blob/2582e59a57154ec5a71321eda24019dd94824e71/src/transformers/trainer.py#L2430
+    # if args.push_to_hub:
+    #     kwargs = {
+    #         "finetuned_from": args.model_name_or_path,
+    #         "tags": "token-classification",
+    #         "dataset_tags": dataset_name,
+    #         "dataset": dataset_name,
+    #     }
+
+    #     trainer.push_to_hub(**kwargs)
 
 
 if __name__ == "__main__":
