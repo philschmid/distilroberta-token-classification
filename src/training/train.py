@@ -83,7 +83,7 @@ def main(args):
 
     # metric
     metric = load_metric("seqeval")
-    compute_metrics = prepare_compute_metrics(metric)
+    compute_metrics = prepare_compute_metrics(metric, label_list)
 
     # load model
     model_init = prepare_model_init(args.model_name_or_path, num_labels)
