@@ -156,8 +156,6 @@ def main(args):
         data_collator=data_collator,
         compute_metrics=compute_metrics,
     )
-    # https://github.com/huggingface/transformers/issues/11249
-    trainer._memory_tracker = None
 
     best_run = trainer.hyperparameter_search(
         direction="maximize", hp_space=my_hp_space, backend="optuna", n_trials=args.n_trials
