@@ -35,7 +35,6 @@ def parse_args():
     parser.add_argument("--n_trials", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=16)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-    parser.add_argument("--warmup_steps", type=int, default=500)
     parser.add_argument("--save_steps", type=int, default=500)
     parser.add_argument("--model_name_or_path", type=str)
     parser.add_argument("--fp16", type=bool, default=True)
@@ -186,7 +185,7 @@ def main(args):
     best_trial = trainer.hyperparameter_search(
         hp_space=lambda _: tune_config,
         backend="ray",
-        n_trials=args.n_trail,
+        n_trials=args.n_trials,
         resources_per_trial={"cpu": 1, "gpu": 1},
         scheduler=scheduler,
         keep_checkpoints_num=1,
