@@ -61,7 +61,7 @@ def main(args):
         per_device_eval_batch_size=args.per_device_eval_batch_size,
         logging_dir=f"{args.output_dir}/logs",
         fp16=args.fp16,
-        save_strategy="epoch",
+        save_strategy="no",  # no checkpoint saving due to space
         # ray parameter
         learning_rate=1e-5,  # config
         num_train_epochs=2,  # config
@@ -72,7 +72,6 @@ def main(args):
         do_train=True,
         do_eval=True,
         disable_tqdm=True,
-        save_strategy="no" # no checkpoint saving due to space
     )
 
     # Setup logging
@@ -157,6 +156,7 @@ def main(args):
     if trainer.is_world_process_zero():
         with open(output_best_run, "w") as outfile:
             json.dump(result, outfile)
+
 
 if __name__ == "__main__":
     args = parse_args()
