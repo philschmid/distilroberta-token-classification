@@ -6,17 +6,19 @@ This repository contains the code to train [distilroberta-base](https://huggingf
 Features:
 - [X] Load best model at the end
 - [x] Hyperparameter search
+- [ ] early stopping
 
 ```json
 {'learning_rate': 4.568387981745284e-05,
- 'num_train_epochs': 4, 
+ 'num_train_epochs': 5, 
  'weight_decay': 0.06449331205217038}. 
  ```
- Best is trial 2 with `eval_f1=0.9533474277660324` and `test_f1=0.909`.
+ Best is trial 2 with `eval_f1=0.9541` and `test_f1=0.9108`.
 
 ## Training
 
-https://colab.research.google.com/drive/1-gZS6YNLdLPBGXzW8305BNhxE8LgFz7u#scrollTo=y7qJLCZXymHD
+https://colab.research.google.com/drive/1-gZS6YNLdLPBGXzW8305BNhxE8LgFz7u#scrollTo=dBoBfjJ6vRBp
+
 ### Launch training
 
 **SageMaker**
