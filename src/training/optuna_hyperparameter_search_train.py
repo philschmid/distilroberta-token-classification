@@ -29,10 +29,12 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser()
     # hyperparameters sent by the client are passed as command-line arguments to the script.
+    parser.add_argument("--model_name_or_path", type=str)
+    parser.add_argument("--dataset", type=str, default="conll2003")
+    parser.add_argument("--task", type=str, default="ner")
     parser.add_argument("--n_trials", type=int, default=3)
     parser.add_argument("--per_device_train_batch_size", type=int, default=16)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-    parser.add_argument("--model_name_or_path", type=str)
     parser.add_argument("--fp16", type=bool, default=True)
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
@@ -89,7 +91,7 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
-    datasets, num_labels, label_to_id, label_list = load_ner_dataset("conll2003")
+    datasets, num_labels, label_to_id, label_list = load_ner_dataset(args.dataset)
     padding = "max_length" if args.pad_to_max_length else False
 
     train_dataset = tokenize_dataset(

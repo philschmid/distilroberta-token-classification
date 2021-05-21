@@ -27,12 +27,13 @@ logger = logging.getLogger(__name__)
 def parse_args():
     parser = argparse.ArgumentParser()
     # hyperparameters sent by the client are passed as command-line arguments to the script.
+    parser.add_argument("--model_name_or_path", type=str)
+    parser.add_argument("--dataset", type=str, default="conll2003")
+    parser.add_argument("--task", type=str, default="ner")
     parser.add_argument("--num_train_epochs", type=float, default=3.0)
     parser.add_argument("--per_device_train_batch_size", type=int, default=8)
     parser.add_argument("--per_device_eval_batch_size", type=int, default=8)
-    parser.add_argument("--warmup_steps", type=int, default=0)
-    parser.add_argument("--save_steps", type=int, default=1000)
-    parser.add_argument("--model_name_or_path", type=str)
+    parser.add_argument("--save_steps", type=int, default=2000)
     parser.add_argument("--learning_rate", type=float, default=5e-5)
     parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--fp16", type=bool, default=True)
@@ -57,7 +58,6 @@ def main(args):
         num_train_epochs=args.num_train_epochs,
         per_device_train_batch_size=args.per_device_train_batch_size,
         per_device_eval_batch_size=args.per_device_eval_batch_size,
-        warmup_steps=args.warmup_steps,
         weight_decay=args.weight_decay,
         logging_dir=f"{args.output_dir}/logs",
         learning_rate=float(args.learning_rate),
@@ -94,8 +94,7 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
-    dataset_name = "conll2003"
-    datasets, num_labels, label_to_id, label_list = load_ner_dataset(dataset_name)
+    datasets, num_labels, label_to_id, label_list = load_ner_dataset(args.dataset)
     padding = "max_length" if args.pad_to_max_length else False
 
     train_dataset = tokenize_dataset(
@@ -168,12 +167,12 @@ def main(args):
         kwargs = {
             "finetuned_from": args.model_name_or_path,
             "tags": "token-classification",
-            "dataset_tags": dataset_name,
-            "dataset": dataset_name,
+            "dataset_tags": args.dataset,
+            "dataset": args.dataset,
         }
 
         trainer.push_to_hub(
-            repo_name=f"{args.model_name_or_path}-{dataset_name}", use_auth_token=args.use_auth_token, **kwargs
+            repo_name=f"{args.model_name_or_path}-{args.task}-{dataset}", use_auth_token=args.use_auth_token, **kwargs
         )
 
 
