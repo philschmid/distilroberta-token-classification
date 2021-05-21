@@ -72,6 +72,7 @@ def main(args):
         do_train=True,
         do_eval=True,
         disable_tqdm=True,
+        save_strategy="no" # no checkpoint saving due to space
     )
 
     # Setup logging
