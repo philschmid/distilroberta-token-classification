@@ -158,17 +158,6 @@ def main(args):
         with open(output_best_run, "w") as outfile:
             json.dump(result, outfile)
 
-    # Test
-    logger.info("*** Test ***")
-
-    predictions, labels, metrics = trainer.predict(test_dataset, metric_key_prefix="test")
-    predictions = np.argmax(predictions, axis=2)
-
-    trainer.log_metrics("test", metrics)
-    logger.info(metrics)
-    trainer.save_metrics("test", metrics)
-
-
 if __name__ == "__main__":
     args = parse_args()
 
