@@ -3,26 +3,16 @@ import logging
 import sys
 
 import numpy as np
-from datasets import load_metric
-
 import transformers
-from ray import tune
-from preprocess_utils import load_ner_dataset, tokenize_dataset
-from train_utils import prepare_compute_metrics, prepare_model_init
-from ray.tune.schedulers import PopulationBasedTraining
-from ray.tune import CLIReporter
-
-
-from transformers import (
-    AutoTokenizer,
-    DataCollatorForTokenClassification,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-    AutoConfig,
-    AutoModelForTokenClassification,
-)
+from datasets import load_metric
+from transformers import AutoTokenizer, DataCollatorForTokenClassification, Trainer, TrainingArguments, set_seed
 from transformers.trainer_utils import is_main_process
+
+from preprocess_utils import load_ner_dataset, tokenize_dataset
+from ray import tune
+from ray.tune import CLIReporter
+from ray.tune.schedulers import PopulationBasedTraining
+from train_utils import prepare_model_init
 
 
 # Set up logging

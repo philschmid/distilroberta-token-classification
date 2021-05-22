@@ -83,3 +83,9 @@ python src/sagemaker_launcher.py \
 ```bash
  BestRun(run_id='16', objective=0.954160391566265, hyperparameters={'learning_rate': 3.97877689893475e-05, 'num_train_epochs': 5, 'weight_decay': 0.05250677574551765})
 ```
+
+```json
+ {'learning_rate': 4.9902376275441704e-05, 'num_train_epochs': 6, 'weight_decay': 0.1270276949568118}. Best is trial 10 with value: 0.9545005411000801.
+
+{'learning_rate': 4.187762151532122e-05, 'num_train_epochs': 4, 'weight_decay': 0.15885868332736558}. Best is trial 22 with value: 0.9557580311854217.
+```

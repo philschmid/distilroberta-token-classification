@@ -1,25 +1,16 @@
 import argparse
-import logging
-import sys
 import copy
-import os
 import json
+import logging
+import os
+import sys
 
-import numpy as np
 from datasets import load_metric
+from transformers import AutoTokenizer, DataCollatorForTokenClassification, Trainer, TrainingArguments, set_seed
+from transformers.trainer_utils import is_main_process
 
 from preprocess_utils import load_ner_dataset, tokenize_dataset
 from train_utils import prepare_compute_metrics, prepare_model_init
-
-
-from transformers import (
-    AutoTokenizer,
-    DataCollatorForTokenClassification,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-)
-from transformers.trainer_utils import is_main_process
 
 
 # Set up logging
@@ -100,10 +91,6 @@ def main(args):
 
     eval_dataset = tokenize_dataset(
         dataset=datasets["validation"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
-    )
-
-    test_dataset = tokenize_dataset(
-        dataset=datasets["test"], tokenizer=tokenizer, padding=padding, label_to_id=label_to_id
     )
 
     # Data collator

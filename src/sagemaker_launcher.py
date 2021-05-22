@@ -1,8 +1,7 @@
 import argparse
 import os
-import boto3
 
-from sagemaker import Session
+import boto3
 from sagemaker.huggingface import HuggingFace
 
 

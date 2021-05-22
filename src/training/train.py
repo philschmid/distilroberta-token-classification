@@ -1,23 +1,16 @@
 import argparse
 import logging
-import sys
 import os
-import numpy as np
-from datasets import load_metric
+import sys
 
+import numpy as np
 import transformers
-from preprocess_utils import load_ner_dataset, tokenize_dataset, conll_label2id, conll_id2label, change_entities
-from train_utils import prepare_compute_metrics, prepare_model_init
-from transformers import (
-    AutoTokenizer,
-    DataCollatorForTokenClassification,
-    Trainer,
-    TrainingArguments,
-    set_seed,
-    AutoConfig,
-    AutoModelForTokenClassification,
-)
+from datasets import load_metric
+from transformers import AutoTokenizer, DataCollatorForTokenClassification, Trainer, TrainingArguments, set_seed
 from transformers.trainer_utils import is_main_process
+
+from preprocess_utils import change_entities, conll_id2label, conll_label2id, load_ner_dataset, tokenize_dataset
+from train_utils import prepare_compute_metrics, prepare_model_init
 
 
 # Set up logging
@@ -172,7 +165,9 @@ def main(args):
         }
 
         trainer.push_to_hub(
-            repo_name=f"{args.model_name_or_path}-{args.task}-{dataset}", use_auth_token=args.use_auth_token, **kwargs
+            repo_name=f"{args.model_name_or_path}-{args.task}-{args.dataset}",
+            use_auth_token=args.use_auth_token,
+            **kwargs,
         )
 
 
