@@ -41,6 +41,9 @@ def launch(args):
         hyperparameters["learning_rate"] = args.learning_rate
         hyperparameters["num_train_epochs"] = args.num_train_epochs
         hyperparameters["use_auth_token"] = args.use_auth_token
+        hyperparameters["do_train"] = args.do_train
+        hyperparameters["do_eval"] = args.do_eval
+        hyperparameters["do_test"] = args.do_test
 
     huggingface_estimator = HuggingFace(
         entry_point=entry_point,
@@ -83,6 +86,9 @@ def parse_args():
     parser.add_argument("--num_train_epochs", type=float, default=4)
     parser.add_argument("--weight_decay", type=float, default=0.0)
     parser.add_argument("--use_auth_token", type=str, default="")
+    parser.add_argument("--do_train", type=str, default="")
+    parser.add_argument("--do_eval", type=str, default="")
+    parser.add_argument("--do_test", type=str, default="")
 
     args, _ = parser.parse_known_args()
     return args

@@ -33,6 +33,9 @@ def parse_args():
     parser.add_argument("--pad_to_max_length", type=bool, default=False)
     parser.add_argument("--output_dir", type=str, default="/opt/ml/model")
     parser.add_argument("--use_auth_token", type=str, default="")
+    parser.add_argument("--do_train", type=str, default="")
+    parser.add_argument("--do_eval", type=str, default="")
+    parser.add_argument("--do_test", type=str, default="")
 
     # # Data, model, and output directories
     # parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -125,38 +128,41 @@ def main(args):
     )
 
     # Training
-    train_result = trainer.train()
-    metrics = train_result.metrics
-    trainer.save_model()  # Saves the tokenizer too for easy upload
+    if args.do_train != "":
+        train_result = trainer.train()
+        metrics = train_result.metrics
+        trainer.save_model()  # Saves the tokenizer too for easy upload
 
-    metrics["train_samples"] = len(train_dataset)
-    trainer.log_metrics("train", metrics)
-    trainer.save_metrics("train", metrics)
-    trainer.save_state()
+        metrics["train_samples"] = len(train_dataset)
+        trainer.log_metrics("train", metrics)
+        trainer.save_metrics("train", metrics)
+        trainer.save_state()
 
     # Evaluation
-    logger.info("*** Evaluate ***")
+    if args.do_eval != "":
+        logger.info("*** Evaluate ***")
 
-    metrics = trainer.evaluate()
-    metrics["eval_samples"] = len(eval_dataset)
-    trainer.log_metrics("eval", metrics)
-    trainer.save_metrics("eval", metrics)
+        metrics = trainer.evaluate()
+        metrics["eval_samples"] = len(eval_dataset)
+        trainer.log_metrics("eval", metrics)
+        trainer.save_metrics("eval", metrics)
 
     # Test
-    logger.info("*** Test ***")
+    if args.do_test != "":
+        logger.info("*** Test ***")
 
-    predictions, labels, metrics = trainer.predict(test_dataset, metric_key_prefix="test")
-    predictions = np.argmax(predictions, axis=2)
+        predictions, labels, metrics = trainer.predict(test_dataset, metric_key_prefix="test")
+        predictions = np.argmax(predictions, axis=2)
 
-    trainer.log_metrics("test", metrics)
-    trainer.save_metrics("test", metrics)
-
-    # push to hub
-    config_path = os.path.join(args.output_dir, "config.json")
-    change_entities(config_path, conll_label2id, conll_id2label)
+        trainer.log_metrics("test", metrics)
+        trainer.save_metrics("test", metrics)
 
     # # https://github.com/huggingface/transformers/blob/2582e59a57154ec5a71321eda24019dd94824e71/src/transformers/trainer.py#L2430
     if args.use_auth_token != "":
+        # push to hub
+        config_path = os.path.join(args.output_dir, "config.json")
+        change_entities(config_path, conll_label2id, conll_id2label)
+
         kwargs = {
             "finetuned_from": args.model_name_or_path,
             "tags": "token-classification",
