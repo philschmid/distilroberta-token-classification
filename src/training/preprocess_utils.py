@@ -71,6 +71,8 @@ def get_label_list(labels):
 def load_ner_dataset(name):
     if name == "conll2003":
         datasets = load_dataset("conll2003")
+    elif name == "conllpp":
+        datasets = load_dataset("conllpp")
     elif name == "wikiann":
         datasets = load_dataset("wikiann", "en")
     elif name == "all":
