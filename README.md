@@ -85,7 +85,19 @@ python src/sagemaker_launcher.py \
 ```
 
 ```json
- {'learning_rate': 4.9902376275441704e-05, 'num_train_epochs': 6, 'weight_decay': 0.1270276949568118}. Best is trial 10 with value: 0.9545005411000801.
+ {'learning_rate': 4.9902376275441704e-05, 'num_train_epochs': 6, 'weight_decay': 0.1270276949568118}. Best is trial 10 with value: 0.9545005411000801. 0.9074 Tesla T4  
 
 {'learning_rate': 4.187762151532122e-05, 'num_train_epochs': 4, 'weight_decay': 0.15885868332736558}. Best is trial 22 with value: 0.9557580311854217.
 ```
+
+### Wikiann
+
+T4 GPU
+```json
+Trial 11 finished with value: 0.8347425057647964 and parameters: {'learning_rate': 4.8575970807202377e-05, 'num_train_epochs': 5, 'weight_decay': 0.0003205703252198268}. 
+```
+
+```json
+ Trial 10 finished with value: 0.8350135633021579 and parameters: {'learning_rate': 4.9086903597787154e-05, 'num_train_epochs': 5, 'weight_decay': 0.006441634418803681}. 
+```
+
