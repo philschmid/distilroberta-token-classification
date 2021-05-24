@@ -1,6 +1,6 @@
 import json
 
-from datasets import ClassLabel, load_dataset
+from datasets import ClassLabel, load_dataset, concatenate_datasets, load_from_disk
 
 
 TEXT_COLUMN_NAME = "tokens"
@@ -49,6 +49,48 @@ conll_label2id = {
 }
 
 
+feature_column = ["tokens", "ner_tags"]
+split_list = ["train", "validation", "test"]
+
+
+def remove_columns_from_dataset_dict(dataset_dict, feature_columns):
+    assert sorted(split_list) == sorted(
+        list(dataset_dict.keys())
+    ), "Dataset is not containing all splits for train,test,val"
+    for split in split_list:
+        remove_column_list = [col for col in list(dataset_dict[split].features) if col not in feature_column]
+        dataset_dict[split] = dataset_dict[split].remove_columns(remove_column_list)
+    return dataset_dict
+
+
+def merging_all_splits_from_dataset_dict(dataset1, dataset2):
+    for split in split_list:
+        assert dataset1[split].features.type == dataset2[split].features.type
+        dataset1[split] = concatenate_datasets([dataset1[split], dataset2[split]])
+    return dataset1
+
+
+def merge_datasets(conll, wikiann):
+    # wikiann
+    # downsizing the large test and validation set and merging it in to train
+    additional_selected_validation_wikiann = wikiann["validation"].train_test_split(test_size=0.5)
+    additional_selected_test_wikiann = wikiann["test"].train_test_split(test_size=0.5)
+    wikiann["train"] = concatenate_datasets([additional_selected_test_wikiann["train"], wikiann["train"]])
+    wikiann["validation"] = additional_selected_validation_wikiann["test"]
+    wikiann["test"] = additional_selected_test_wikiann["test"]
+    # removing columns for conll
+    wikiann_cleaned = remove_columns_from_dataset_dict(wikiann, feature_column)
+    wikiann_cleaned.save_to_disk("../data/wikiann")
+    # conll
+    # removing columns
+    conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
+    conll_cleaned.save_to_disk("../data/conll")
+    # merging dataset
+    loaded_conll = load_from_disk("../data/conll")
+    loaded_wikiann = load_from_disk("../data/conll")
+    return merging_all_splits_from_dataset_dict(loaded_wikiann, loaded_conll)
+
+
 def change_entities(config_file, label2id, id2label):
     with open(config_file, "r") as file:
         json_data = json.load(file)
@@ -75,8 +117,11 @@ def load_ner_dataset(name):
         datasets = load_dataset("conllpp")
     elif name == "wikiann":
         datasets = load_dataset("wikiann", "en")
-    elif name == "all":
-        # TODO concat
+    elif name == "wikiann-conll2003":
+        conll = load_dataset("conll2003")
+        wikiann = load_dataset("wikiann", "en")
+        datasets = merge_datasets(conll, wikiann)
+
         pass
     else:
         raise ValueError("Define either conll, wikiann or all as name")
