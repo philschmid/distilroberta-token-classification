@@ -36,6 +36,7 @@ def parse_args():
     parser.add_argument("--do_train", type=str, default="")
     parser.add_argument("--do_eval", type=str, default="")
     parser.add_argument("--do_test", type=str, default="")
+    parser.add_argument("--extra_model_name", type=str, default="")
 
     # # Data, model, and output directories
     # parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -169,9 +170,13 @@ def main(args):
             "dataset_tags": args.dataset,
             "dataset": args.dataset,
         }
-
+        repo_name = (
+            f"{args.model_name_or_path}-{args.task}-{args.dataset}"
+            if args.extra_model_name == ""
+            else f"{args.model_name_or_path}-{args.task}-{args.dataset}-{args.extra_model_name}"
+        )
         trainer.push_to_hub(
-            repo_name=f"{args.model_name_or_path}-{args.task}-{args.dataset}",
+            repo_name=repo_name,
             use_auth_token=args.use_auth_token,
             **kwargs,
         )
