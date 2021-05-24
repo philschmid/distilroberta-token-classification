@@ -1,7 +1,7 @@
 import json
 
 from datasets import ClassLabel, load_dataset, concatenate_datasets, load_from_disk
-
+import datasets
 
 TEXT_COLUMN_NAME = "tokens"
 LABEL_COLUMN_NAME = "ner_tags"
@@ -51,6 +51,21 @@ conll_label2id = {
 
 feature_column = ["tokens", "ner_tags"]
 split_list = ["train", "validation", "test"]
+three_class_feature = (
+    datasets.Sequence(
+        datasets.features.ClassLabel(
+            names=[
+                "O",
+                "B-PER",
+                "I-PER",
+                "B-ORG",
+                "I-ORG",
+                "B-LOC",
+                "I-LOC",
+            ]
+        )
+    ),
+)
 
 
 def remove_columns_from_dataset_dict(dataset_dict, feature_columns):
@@ -91,8 +106,12 @@ def merge_datasets(conll, wikiann, class_num=4):
     conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
     if class_num == 3:
         conll_cleaned["train"] = conll_cleaned["train"].map(change_label_to_zero, batched=True)
+        conll_cleaned["train"].features["ner_tags"] = three_class_feature
         conll_cleaned["test"] = conll_cleaned["test"].map(change_label_to_zero, batched=True)
+        conll_cleaned["test"].features["ner_tags"] = three_class_feature
         conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero, batched=True)
+        conll_cleaned["validation"].features["ner_tags"] = three_class_feature
+
     conll_cleaned.save_to_disk("../data/conll")
     # merging dataset
     loaded_conll = load_from_disk("../data/conll")
