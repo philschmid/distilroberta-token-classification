@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument("--do_eval", type=str, default="")
     parser.add_argument("--do_test", type=str, default="")
     parser.add_argument("--extra_model_name", type=str, default="")
+    parser.add_argument("--class_num", type=int, default=4)
 
     # # Data, model, and output directories
     # parser.add_argument("--model_dir", type=str, default=os.environ["SM_MODEL_DIR"])
@@ -91,7 +92,7 @@ def main(args):
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name_or_path, use_fast=True, add_prefix_space=True)
 
-    datasets, num_labels, label_to_id, label_list = load_ner_dataset(args.dataset)
+    datasets, num_labels, label_to_id, label_list = load_ner_dataset(args.dataset, args.class_num)
     padding = "max_length" if args.pad_to_max_length else False
 
     train_dataset = tokenize_dataset(

@@ -70,7 +70,12 @@ def merging_all_splits_from_dataset_dict(dataset1, dataset2):
     return dataset1
 
 
-def merge_datasets(conll, wikiann):
+def change_label_to_zero(example):
+    example["ner_tags"] = [0 if label == 7 or label == 8 else label for label in example["ner_tags"]]
+    return example
+
+
+def merge_datasets(conll, wikiann, class_num=4):
     # wikiann
     # downsizing the large test and validation set and merging it in to train
     additional_selected_validation_wikiann = wikiann["validation"].train_test_split(test_size=0.5)
@@ -84,6 +89,10 @@ def merge_datasets(conll, wikiann):
     # conll
     # removing columns
     conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
+    if class_num == 3:
+        conll_cleaned["train"] = conll_cleaned["train"].map(change_label_to_zero, batched=True)
+        conll_cleaned["test"] = conll_cleaned["test"].map(change_label_to_zero, batched=True)
+        conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero, batched=True)
     conll_cleaned.save_to_disk("../data/conll")
     # merging dataset
     loaded_conll = load_from_disk("../data/conll")
@@ -110,7 +119,7 @@ def get_label_list(labels):
     return label_list
 
 
-def load_ner_dataset(name):
+def load_ner_dataset(name, class_num=4):
     if name == "conll2003":
         datasets = load_dataset("conll2003")
     elif name == "conllpp":
@@ -120,7 +129,7 @@ def load_ner_dataset(name):
     elif name == "wikiann-conll2003":
         conll = load_dataset("conll2003")
         wikiann = load_dataset("wikiann", "en")
-        datasets = merge_datasets(conll, wikiann)
+        datasets = merge_datasets(conll, wikiann, class_num)
 
         pass
     else:
