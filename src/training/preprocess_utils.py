@@ -100,7 +100,6 @@ def merge_datasets(conll, wikiann, class_num=4):
     wikiann["test"] = additional_selected_test_wikiann["test"]
     # removing columns for conll
     wikiann_cleaned = remove_columns_from_dataset_dict(wikiann, feature_column)
-    wikiann_cleaned.save_to_disk("../data/wikiann")
     # conll
     # removing columns
     conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
@@ -112,11 +111,7 @@ def merge_datasets(conll, wikiann, class_num=4):
         conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero, batched=True)
         conll_cleaned["validation"].features["ner_tags"] = three_class_feature
 
-    conll_cleaned.save_to_disk("../data/conll")
-    # merging dataset
-    loaded_conll = load_from_disk("../data/conll")
-    loaded_wikiann = load_from_disk("../data/conll")
-    return merging_all_splits_from_dataset_dict(loaded_wikiann, loaded_conll)
+    return merging_all_splits_from_dataset_dict(wikiann_cleaned, conll_cleaned)
 
 
 def change_entities(config_file, label2id, id2label):
