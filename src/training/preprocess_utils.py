@@ -80,7 +80,6 @@ def remove_columns_from_dataset_dict(dataset_dict, feature_columns):
 
 def merging_all_splits_from_dataset_dict(dataset1, dataset2):
     for split in split_list:
-        assert dataset1[split].features.type == dataset2[split].features.type
         dataset1[split] = concatenate_datasets([dataset1[split], dataset2[split]])
     return dataset1
 
@@ -96,8 +95,10 @@ def merge_datasets(conll, wikiann, class_num=4):
     additional_selected_validation_wikiann = wikiann["validation"].train_test_split(test_size=0.5)
     additional_selected_test_wikiann = wikiann["test"].train_test_split(test_size=0.5)
     wikiann["train"] = concatenate_datasets([additional_selected_test_wikiann["train"], wikiann["train"]])
+    wikiann["train"] = concatenate_datasets([additional_selected_validation_wikiann["train"], wikiann["train"]])
     wikiann["validation"] = additional_selected_validation_wikiann["test"]
     wikiann["test"] = additional_selected_test_wikiann["test"]
+
     # removing columns for conll
     wikiann_cleaned = remove_columns_from_dataset_dict(wikiann, feature_column)
     # conll
@@ -105,13 +106,22 @@ def merge_datasets(conll, wikiann, class_num=4):
     conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
     if class_num == 3:
         conll_cleaned["train"] = conll_cleaned["train"].map(change_label_to_zero, batched=True)
-        conll_cleaned["train"].features["ner_tags"] = three_class_feature
         conll_cleaned["test"] = conll_cleaned["test"].map(change_label_to_zero, batched=True)
-        conll_cleaned["test"].features["ner_tags"] = three_class_feature
         conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero, batched=True)
-        conll_cleaned["validation"].features["ner_tags"] = three_class_feature
 
-    return merging_all_splits_from_dataset_dict(wikiann_cleaned, conll_cleaned)
+    wikiann_cleaned.save_to_disk("../data/wikiann")
+    conll_cleaned.save_to_disk("../data/conll")
+    # merging dataset
+    loaded_conll = load_from_disk("../data/conll")
+    loaded_wikiann = load_from_disk("../data/conll")
+
+    merge_dataset = merging_all_splits_from_dataset_dict(loaded_conll, loaded_wikiann)
+    if class_num == 3:
+        for split in split_list:
+            merge_dataset[split].features["ner_tags"] = three_class_feature
+        return merge_dataset
+    else:
+        return merge_dataset
 
 
 def change_entities(config_file, label2id, id2label):
