@@ -51,20 +51,18 @@ conll_label2id = {
 
 feature_column = ["tokens", "ner_tags"]
 split_list = ["train", "validation", "test"]
-three_class_feature = (
-    datasets.Sequence(
-        datasets.features.ClassLabel(
-            names=[
-                "O",
-                "B-PER",
-                "I-PER",
-                "B-ORG",
-                "I-ORG",
-                "B-LOC",
-                "I-LOC",
-            ]
-        )
-    ),
+three_class_feature = datasets.Sequence(
+    datasets.features.ClassLabel(
+        names=[
+            "O",
+            "B-PER",
+            "I-PER",
+            "B-ORG",
+            "I-ORG",
+            "B-LOC",
+            "I-LOC",
+        ]
+    )
 )
 
 
@@ -154,12 +152,10 @@ def load_ner_dataset(name, class_num=4):
         conll = load_dataset("conll2003")
         wikiann = load_dataset("wikiann", "en")
         datasets = merge_datasets(conll, wikiann, class_num)
-
-        pass
     else:
         raise ValueError("Define either conll, wikiann or all as name")
     features = datasets["train"].features
-
+    print(features)
     if isinstance(features[LABEL_COLUMN_NAME].feature, ClassLabel):
         label_list = features[LABEL_COLUMN_NAME].feature.names
         # No need to convert the labels since they are already ints.
