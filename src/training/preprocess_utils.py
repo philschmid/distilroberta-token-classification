@@ -155,7 +155,7 @@ def load_ner_dataset(name, class_num=4):
     else:
         raise ValueError("Define either conll, wikiann or all as name")
     features = datasets["train"].features
-    print(features)
+
     if isinstance(features[LABEL_COLUMN_NAME].feature, ClassLabel):
         label_list = features[LABEL_COLUMN_NAME].feature.names
         # No need to convert the labels since they are already ints.
