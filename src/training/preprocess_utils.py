@@ -2,6 +2,7 @@ import json
 
 from datasets import ClassLabel, load_dataset, concatenate_datasets, load_from_disk
 import datasets
+from datasets.features import Value
 
 TEXT_COLUMN_NAME = "tokens"
 LABEL_COLUMN_NAME = "ner_tags"
@@ -103,9 +104,9 @@ def merge_datasets(conll, wikiann, class_num=4):
     # removing columns
     conll_cleaned = remove_columns_from_dataset_dict(conll, feature_column)
     if class_num == 3:
-        conll_cleaned["train"] = conll_cleaned["train"].map(change_label_to_zero, batched=True)
-        conll_cleaned["test"] = conll_cleaned["test"].map(change_label_to_zero, batched=True)
-        conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero, batched=True)
+        conll_cleaned["train"] = conll_cleaned["train"].map(change_label_to_zero)
+        conll_cleaned["test"] = conll_cleaned["test"].map(change_label_to_zero)
+        conll_cleaned["validation"] = conll_cleaned["validation"].map(change_label_to_zero)
 
     wikiann_cleaned.save_to_disk("../data/wikiann")
     conll_cleaned.save_to_disk("../data/conll")
